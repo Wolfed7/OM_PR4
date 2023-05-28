@@ -17,5 +17,7 @@ public interface IMinSearchMethodND
    // Минимум функции, найденный методом поиска.
    public double MinValue { get; }
 
+   public int FCALCS { get; } // temp
+
    public void Search(IFunction function, PointND startPoint);
 }

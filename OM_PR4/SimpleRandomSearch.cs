@@ -9,6 +9,8 @@ namespace OM_PR4;
 
 public class SimpleRandomSearch : IMinSearchMethodND
 {
+   public int FCALCS { get; private set; } // temp
+
    private double _probability;
    public PointND MinPoint { get; private set; }
    public double MinValue { get; private set; }
@@ -28,6 +30,7 @@ public class SimpleRandomSearch : IMinSearchMethodND
 
    public void Search(IFunction function, PointND startPoint)
    {
+      FCALCS = 0;
       double minValue = function.Compute(startPoint);
 
       int numberOfExperiments = 1;
@@ -38,7 +41,6 @@ public class SimpleRandomSearch : IMinSearchMethodND
       double areaVolume = 1;
       for (int i = 0; i < startPoint.Dimention; i++)
          areaVolume *= Area[i].Length;
-
 
       double probabilityEps = epsVicinityVolume / areaVolume;
 
@@ -61,5 +63,7 @@ public class SimpleRandomSearch : IMinSearchMethodND
 
       MinPoint = startPoint;
       MinValue = minValue;
+
+      Console.Write($"{numberOfExperiments}   ");
    }
 }

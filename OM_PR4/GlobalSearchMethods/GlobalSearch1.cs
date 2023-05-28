@@ -9,6 +9,8 @@ namespace OM_PR4.GlobalSearchMethods;
 
 public class GlobalSearch1 : IMinSearchMethodND
 {
+   public int FCALCS { get; private set; } // temp
+
    public PointND MinPoint { get; private set; }
    public double MinValue { get; private set; }
 
@@ -18,6 +20,9 @@ public class GlobalSearch1 : IMinSearchMethodND
 
    public GlobalSearch1(IDictionary<int, Interval> area, double eps = 1e-3, int trying = 100)
    {
+      FCALCS = 0;
+
+
       MinPoint = new PointND();
       MinValue = 0;
 
@@ -28,8 +33,11 @@ public class GlobalSearch1 : IMinSearchMethodND
 
    public void Search(IFunction function, PointND startPoint)
    {
+      FCALCS = 0;
       IMinSearchMethodND directedMethod = new SimplexSearch(Eps, 1000);
       MinPoint = startPoint;
+      MinValue = function.Compute(MinPoint);
+      FCALCS++;
 
       for (int i = 0; i < Trying; i++)
       {
@@ -38,11 +46,13 @@ public class GlobalSearch1 : IMinSearchMethodND
             newPoint.Add(Area[j].LeftBoundary + new Random().NextDouble() * Area[j].Length);
 
          directedMethod.Search(function, newPoint);
-
-         if (function.Compute(directedMethod.MinPoint) < function.Compute(MinPoint))
+         FCALCS += directedMethod.FCALCS;
+         if (directedMethod.MinValue < MinValue)
+         {
+            i = 0;
             MinPoint = directedMethod.MinPoint;
+            MinValue = directedMethod.MinValue;
+         }
       }
-
-      MinValue = function.Compute(MinPoint);
    }
 }

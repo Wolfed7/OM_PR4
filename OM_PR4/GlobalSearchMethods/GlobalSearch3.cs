@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,6 +10,7 @@ namespace OM_PR4.GlobalSearchMethods;
 
 public class GlobalSearch3 : IMinSearchMethodND
 {
+   public int FCALCS { get; private set; } // temp
    public PointND MinPoint { get; private set; }
    public double MinValue { get; private set; }
 
@@ -26,64 +28,69 @@ public class GlobalSearch3 : IMinSearchMethodND
       Trying = trying;
    }
 
-   //public void Search(IFunction function, PointND startPoint)
-   //{
-   //   IMinSearchMethodND directedMethod = new SimplexSearch(Eps, 1000);
+   public void Search(IFunction function, PointND startPoint)
+   {
+      FCALCS = 0;
+      IMinSearchMethodND directedMethod = new SimplexSearch(Eps, 1000);
 
-   //   double temp;
-   //   double functionValueX2;
 
-   //   Vector2D x1, x2;
-   //   MinPoint = startPoint;
-   //   newPoint =  = new(newX, newY);
+      PointND x1, x2;
+      MinPoint = startPoint;
 
-   //   double functionValueX1 = function.Value(MinPoint);
+      double functionValueX1;
+      double functionValueX2;
 
-   //   for (int i = 0; i < Trying; i++)
-   //   {
-   //      double step = 1.0;
+      directedMethod.Search(function, MinPoint);
+      x1 = directedMethod.MinPoint;
+      functionValueX1 = directedMethod.MinValue;
+      FCALCS += directedMethod.FCALCS;
 
-   //      simplexMethod.Compute(function, initPoint);
-   //      x1 = simplexMethod.Min!.Value;
+      for (int i = 0; i < Trying; i++)
+      {
+         var newPoint = new PointND() { };
+         for (int j = 0; j < startPoint.Dimention; j++)
+            newPoint.Add(Area[j].LeftBoundary + new Random().NextDouble() * Area[j].Length);
 
-   //      if ((temp = function.Value(simplexMethod.Min!.Value)) < functionValueX1)
-   //      {
-   //         _min = simplexMethod.Min;
-   //         functionValueX1 = temp;
-   //      }
+         var randomVector = new PointND() { };
+         for (int j = 0; j < startPoint.Dimention; j++)
+            randomVector.Add(Area[j].LeftBoundary + new Random().NextDouble() * Area[j].Length);
 
-   //      newX = new Random().NextDouble(rectangle.LeftBottom.X, rectangle.RightBottom.X);
-   //      newY = new Random().NextDouble(rectangle.LeftBottom.Y, rectangle.LeftTop.Y);
+         double step = 1.0;
+         PointND direction = directedMethod.MinPoint + step * (directedMethod.MinPoint - randomVector);
+         double functionValueDirection = function.Compute(direction);
+         FCALCS++;
 
-   //      Vector2D randomVector = new(newX, newY);
-   //      Vector2D direction = simplexMethod.Min!.Value + step * (simplexMethod.Min.Value - randomVector);
-   //      double functionValueDirection = function.Value(direction);
+         double prevValue = directedMethod.MinValue;
+         while (functionValueDirection >= prevValue && IsInside(Area, direction))
+         {
+            step *= 2;
+            prevValue = functionValueDirection;
+            direction = directedMethod.MinPoint + step * (directedMethod.MinPoint - randomVector);
+            functionValueDirection = function.Compute(direction);
+            FCALCS++;
+         }
 
-   //      while (functionValueDirection >= function.Value(simplexMethod.Min.Value) && rectangle.Inside(direction))
-   //      {
-   //         direction = simplexMethod.Min!.Value + step * (simplexMethod.Min.Value - randomVector);
-   //         functionValueDirection = function.Value(direction);
-   //         step++;
-   //      }
+         directedMethod.Search(function, direction);
+         FCALCS += directedMethod.FCALCS;
+         x2 = directedMethod.MinPoint;
+         functionValueX2 = directedMethod.MinValue;
 
-   //      simplexMethod.Compute(function, direction);
-   //      functionValueX2 = function.Value(simplexMethod.Min.Value);
+         if (functionValueX2 < functionValueX1)
+         {
+            x1 = x2;
+            functionValueX1 = functionValueX2;
+         }
+      }
 
-   //      x2 = simplexMethod.Min.Value;
+      MinPoint = x1;
+      MinValue = functionValueX1;
 
-   //      if (functionValueX2 < functionValueX1)
-   //      {
-   //         _min = simplexMethod.Min;
-   //      }
-
-   //      if (functionValueX2 < functionValueX1)
-   //      {
-   //         initPoint = x2;
-   //      }
-   //      else
-   //      {
-   //         initPoint = x1;
-   //      }
-   //   }
+      bool IsInside(IDictionary<int, Interval> area, PointND point)
+      {
+         for (int i = 0; i < point.Dimention; i++)
+            if (!(area[i].LeftBoundary <= point[i] && point[i] <= area[i].RightBoundary))
+               return false;
+         return true;
+      }
    }
 }

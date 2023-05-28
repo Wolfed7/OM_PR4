@@ -10,7 +10,7 @@ public class SimplexSearch : IMinSearchMethodND
 {
    private PointND[] _simplex;
 
-   public int FunctionCalcs;        // Количество вычислений функции.
+   public int FCALCS { get; private set; }  // Количество вычислений функции.
    public static double Alpha => 1; // Коэффициент отражения
    public static double Beta => 0.5;
    public static double Gamma => 2;
@@ -32,11 +32,12 @@ public class SimplexSearch : IMinSearchMethodND
 
       Eps = eps;
       MaxIters = maxIters;
-      FunctionCalcs = 0;
+      FCALCS = 0;
    }
 
    public void Search(IFunction function, PointND startPoint)
    {
+      FCALCS = 0;
       int PointDimension = startPoint.Dimention;
       int SimplexSize = PointDimension + 1;
 
@@ -69,7 +70,7 @@ public class SimplexSearch : IMinSearchMethodND
       for (int iters = 0; iters < MaxIters; iters++)
       {
          _simplex = _simplex.OrderBy(function.Compute).ToArray();
-         FunctionCalcs += SimplexSize;
+         FCALCS += SimplexSize;
          xc.Fill(0);
 
          // Центр тяжести = сумма всех векторов (не скалярка), кроме xh 
@@ -78,7 +79,7 @@ public class SimplexSearch : IMinSearchMethodND
                xc[i] += _simplex[j][i] / PointDimension;
 
          // Выйдем, если достигли заданной точности.
-         FunctionCalcs += 2; // В идеале дважды вычисляем для проверки точности.
+         FCALCS += 2; // В идеале дважды вычисляем для проверки точности.
          if (IsAccuracyAchieved(_simplex, xc, function))
          {
             MinPoint = _simplex[0]; //xc
@@ -93,7 +94,7 @@ public class SimplexSearch : IMinSearchMethodND
          double fl = function.Compute(_simplex[0]); // Худшее значение функции.
          double fg = function.Compute(_simplex[PointDimension - 1]);
          double fh = function.Compute(_simplex[PointDimension]);
-         FunctionCalcs += 4;
+         FCALCS += 4;
 
 
          if (fl < fr && fr < fg)
@@ -105,6 +106,7 @@ public class SimplexSearch : IMinSearchMethodND
             // Производим растяжение.
             xe = Expansion(xc, xr);
 
+            FCALCS += 1;
             // fe < fr
             if (function.Compute(xe) < fr)
                _simplex[PointDimension] = (PointND)xe.Clone();
@@ -118,6 +120,7 @@ public class SimplexSearch : IMinSearchMethodND
             // Проведём сжатие.
             xg = OutsideContraction(xc, xr);
 
+            FCALCS += 1;
             // fg < fr - сжимаем ещё сильнее
             if (function.Compute(xg) < fr)
                _simplex[PointDimension] = (PointND)xg.Clone();
@@ -130,14 +133,13 @@ public class SimplexSearch : IMinSearchMethodND
             // Не меняем xr и наибольший элемент симплекса, делаем сжатие.
             xg = InsideContraction(_simplex, xc);
 
-            FunctionCalcs += 1;
+            FCALCS += 1;
             if (function.Compute(xg) < fh)
                _simplex[PointDimension] = (PointND)xg.Clone();
             else
                Shrink(_simplex);
          }
       }
-
       MinPoint = _simplex[0];
    }
 
