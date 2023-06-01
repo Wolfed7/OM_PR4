@@ -34,7 +34,7 @@ public class GlobalSearch3 : IMinSearchMethodND
       IMinSearchMethodND directedMethod = new SimplexSearch(Eps, 1000);
 
 
-      PointND x1, x2;
+      PointND x1;
       MinPoint = startPoint;
 
       double functionValueX1;
@@ -47,6 +47,7 @@ public class GlobalSearch3 : IMinSearchMethodND
 
       for (int i = 0; i < Trying; i++)
       {
+         PointND x2;
          var newPoint = new PointND() { };
          for (int j = 0; j < startPoint.Dimention; j++)
             newPoint.Add(Area[j].LeftBoundary + new Random().NextDouble() * Area[j].Length);
